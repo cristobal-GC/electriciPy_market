@@ -6,14 +6,14 @@ def plot_market_curve(offer_x, offer_y, demand_x, demand_y, clearing_price=None)
     fig.add_trace(go.Scatter(
         x=offer_x, y=offer_y,
         mode="lines+markers",
-        line_shape="hv",
+        line_shape="vh",
         name="Oferta"
     ))
 
     fig.add_trace(go.Scatter(
         x=demand_x, y=demand_y,
         mode="lines+markers",
-        line_shape="hv",
+        line_shape="vh",
         name="Demanda",
         line=dict(color="green")
     ))
