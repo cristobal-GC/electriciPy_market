@@ -1,0 +1,10 @@
+name: electriciPy-market
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - dash
+  - plotly
+  - pandas
+  - numpy
+  - pyyaml

@@ -1,0 +1,21 @@
+technologies:
+  gas:
+    price: 60
+    capacity: 25
+  nuclear:
+    price: 15
+    capacity: 10
+
+
+
+
+demand:
+  off1:
+    price: 180
+    quantity: 20
+  off2:
+    price: 20
+    quantity: 2
+  off3:
+    price: 10
+    quantity: 5
