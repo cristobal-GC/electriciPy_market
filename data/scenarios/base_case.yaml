@@ -1,12 +1,21 @@
 technologies:
   gas:
-    price: 60
-    capacity: 25
+    capacity_min: 25
+    capacity_max: 25
+    quantity_initial: 25
+    price_initial: 60
+    
   nuclear:
-    price: 15
-    capacity: 10
+    capacity_min: 10
+    capacity_max: 10
+    quantity_initial: 10
+    price_initial: 15
 
-
+  hydro:
+    capacity_min: 0
+    capacity_max: 15
+    quantity_initial: 10
+    price_initial: 80
 
 
 demand:
@@ -19,3 +28,8 @@ demand:
   off3:
     price: 10
     quantity: 5
+
+
+quantity_step: 1
+price_max: 180
+price_step: 1

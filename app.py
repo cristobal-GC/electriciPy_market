@@ -1,77 +1,75 @@
 from dash import Dash, html, dcc, Input, Output
 from src.config.parameters import load_scenario
-from src.plotting.data import step_offer_curve_data, step_demand_curve_data
+from src.plotting.data import step_supply_curve_data, step_demand_curve_data
 from src.plotting.plot import plot_market_curve
 from src.components.technology_block import technology_block
 import numpy as np
 
+
+
 # =====================
-# Cargar escenario
+# Load scenario
 # =====================
 scenario = load_scenario()
 
-# Parámetros iniciales
-initial_gas_price = scenario["technologies"]["gas"]["price"]
-initial_gas_capacity = scenario["technologies"]["gas"]["capacity"]
+##### Initial parameters
+demand_bids_dict = scenario["demand"]
 
-initial_nuclear_price = scenario["technologies"]["nuclear"]["price"]
-initial_nuclear_capacity = scenario["technologies"]["nuclear"]["capacity"]
 
-demand_dict = scenario["demand"]
 
 # =====================
-# Crear app
+# Launch app
 # =====================
 app = Dash(__name__)
 
+
+
+# =====================
+# App layout
+# =====================
 app.layout = html.Div(
     [
+        ### Title
         html.H1("Mercado eléctrico: oferta y demanda escalonada"),
 
-        # ---------- Bloques de tecnologías ---------- (se ponen todos en línea, luego se ajustan en filas según la pantalla
 
+        ### Technology blocks
         html.Div(
             [
                 technology_block(
                     name="Gas",
-                    icon="gas.png",
-                    price_slider_id="gas_price",
-                    quantity_slider_id="gas_quantity",
-                    price=initial_gas_price,
-                    quantity=initial_gas_capacity,
+                    technology="gas",
+                    scenario=scenario,
+                    icon="img/gas.png",                    
+                    quantity_slider_id="gas_quantity",                    
+                    price_slider_id="gas_price",                                        
                 ),
-
                 technology_block(
-                    name="Gas",
-                    icon="gas.png",
-                    price_slider_id="gas_price",
-                    quantity_slider_id="gas_quantity",
-                    price=initial_gas_price,
-                    quantity=initial_gas_capacity,
+                    name="Hydro",
+                    technology="hydro",
+                    scenario=scenario,
+                    icon="img/hydro.png",                    
+                    quantity_slider_id="hydro_quantity",                    
+                    price_slider_id="hydro_price",  
                 ),
-
                 technology_block(
                     name="Nuclear",
-                    icon="nuclear.png",
-                    price_slider_id="nuclear_price",
-                    quantity_slider_id="nuclear_quantity",
-                    price=initial_nuclear_price,
-                    quantity=initial_nuclear_capacity,
+                    technology="nuclear",
+                    scenario=scenario,
+                    icon="img/nuclear.png",                    
+                    quantity_slider_id="nuclear_quantity",                    
+                    price_slider_id="nuclear_price",                
                 ),
             ],
             style={
                 "display": "flex",
                 "justify-content": "center",
-                "flex-wrap": "wrap",  # 👈 importante para pantallas pequeñas
+                "flex-wrap": "wrap",
             }
-        ),
+        ),       
+    
 
-
-
-
-
-
-        # ---------- Gráfica y resultados ----------
+        ### Plot and results
         dcc.Graph(id="market_curve"),
         html.Div(
             id="market_info",
@@ -79,40 +77,52 @@ app.layout = html.Div(
         ),
     ],
     style={"width": "60%", "margin": "auto"},
-)
+),
+
+
+
 
 # =====================
-# Callback
+# App callback
 # =====================
 @app.callback(
     Output("market_curve", "figure"),
     Output("market_info", "children"),
-    Input("gas_price", "value"),
     Input("gas_quantity", "value"),
-    Input("nuclear_price", "value"),
+    Input("gas_price", "value"),
+    Input("hydro_quantity", "value"),
+    Input("hydro_price", "value"),
     Input("nuclear_quantity", "value"),
+    Input("nuclear_price", "value"),
 )
+
 def update_market_curve(
-    gas_price,
     gas_quantity,
-    nuclear_price,
+    gas_price,
+    hydro_quantity,
+    hydro_price, 
     nuclear_quantity,
+    nuclear_price,
 ):
-    # Construir ofertas
-    offers = {
+    # Supply bids
+    supply_bids_dict = {
         "gas": {
-            "price": gas_price,
-            "capacity": gas_quantity,
+            "quantity": gas_quantity,
+            "price": gas_price,            
         },
-        "nuclear": {
+        "hydro": {            
+            "quantity": hydro_quantity,
+            "price": hydro_price,
+        },
+        "nuclear": {            
+            "quantity": nuclear_quantity,
             "price": nuclear_price,
-            "capacity": nuclear_quantity,
         },
     }
 
-    # Curvas de oferta y demanda
-    offer_x, offer_y = step_offer_curve_data(offers)
-    demand_x, demand_y = step_demand_curve_data(demand_dict)
+    # Supply and demand curves
+    offer_x, offer_y = step_supply_curve_data(supply_bids_dict)
+    demand_x, demand_y = step_demand_curve_data(demand_bids_dict)
 
     # Precio de casación (criterio simple)
     clearing_price = None

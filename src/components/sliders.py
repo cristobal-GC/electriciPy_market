@@ -13,7 +13,7 @@ def technology_slider(
     width: str = "300px"
 ):
     """
-    Slider reutilizable para una tecnología del mercado eléctrico
+    Generic slider for a generic technology
     """
 
     slider_block = html.Div(
@@ -38,7 +38,7 @@ def technology_slider(
         [
             slider_block,
             html.Img(
-                src=f"/assets/{icon}",
+                src=f"{icon}",
                 style={
                     "height": "60px",
                     "margin-left": "20px"

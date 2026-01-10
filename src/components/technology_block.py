@@ -4,52 +4,63 @@ from src.components.sliders import technology_slider
 def technology_block(
     *,
     name: str,
+    technology: str,
+    scenario: dict,
     icon: str,
-    price_slider_id: str,
     quantity_slider_id: str,
-    price: float,
-    quantity: float,
-    price_range=(0, 200, 5),
-    quantity_range=(0, 300, 10),
+    price_slider_id: str,    
 ):
     """
-    Bloque completo de una tecnología:
-    - Icono
-    - Slider de precio
-    - Slider de cantidad
+    Generic block for a generic technology
     """
+
+
+    ### Retrieve scenario parameters
+    quantity_min        = scenario["technologies"][technology]["capacity_min"]
+    quantity_max        = scenario["technologies"][technology]["capacity_max"]
+    quantity_initial    = scenario["technologies"][technology]["quantity_initial"]
+    quantity_step       = scenario["quantity_step"]    
+    price_max           = scenario["price_max"]
+    price_initial       = scenario["technologies"][technology]["price_initial"]
+    price_step          = scenario["price_step"]
+
+
+    ### Non-scenario parameters
+    price_min = 0
+
 
     return html.Div(
         [
             html.H3(name),
 
             technology_slider(
-                label="Precio (€/MWh)",
-                slider_id=price_slider_id,
-                min_value=price_range[0],
-                max_value=price_range[1],
-                step=price_range[2],
-                value=price,
+                label="Quantity (MWh)",
+                slider_id=quantity_slider_id,
+                min_value=quantity_min,
+                max_value=quantity_max,
+                step=quantity_step,
+                value=quantity_initial,
                 marks={
-                    price_range[0]: str(price_range[0]),
-                    price_range[1]: str(price_range[1]),
+                    quantity_min: str(quantity_min),
+                    quantity_max: str(quantity_max),
                 },
-                icon=icon
+                icon=None  # put icon only once
             ),
 
             technology_slider(
-                label="Energía ofertada (MWh)",
-                slider_id=quantity_slider_id,
-                min_value=quantity_range[0],
-                max_value=quantity_range[1],
-                step=quantity_range[2],
-                value=quantity,
+                label="Price (EUR/MWh)",
+                slider_id=price_slider_id,
+                min_value=price_min,
+                max_value=price_max,
+                step=price_step,
+                value=price_initial,
                 marks={
-                    quantity_range[0]: str(quantity_range[0]),
-                    quantity_range[1]: str(quantity_range[1]),
+                    0: str(0),
+                    price_max: str(price_max),
                 },
-                icon=None  # el icono solo una vez
-            ),
+                icon=icon
+            ),            
+
         ],
         style={
             "border": "1px solid #ddd",
