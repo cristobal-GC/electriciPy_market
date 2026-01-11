@@ -16,6 +16,10 @@ def technology_slider(
     Generic slider for a generic technology
     """
 
+    if min_value==max_value:
+        width='0px'
+
+
     slider_block = html.Div(
         [
             html.Label(label),
@@ -25,7 +29,11 @@ def technology_slider(
                 max=max_value,
                 step=step,
                 value=value,
-                marks=marks
+                marks=marks,
+                tooltip={"placement": "bottom",
+                         "always_visible": True,
+                         "style": {"color": "White", "fontSize": "18"}
+                         }
             ),
         ],
         style={"width": width}

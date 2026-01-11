@@ -16,6 +16,15 @@ scenario = load_scenario()
 demand_bids_dict = scenario["demand"]
 
 
+technologies = [
+    {"name": "Nuclear", "id": "nuclear", "icon": "nuclear.png"},
+    {"name": "Solar-Wind", "id": "solar_wind", "icon": "solar_wind.png"},
+    {"name": "Coal", "id": "coal", "icon": "coal.png"},
+    {"name": "Gas", "id": "gas", "icon": "gas.png"},
+    {"name": "Hydro", "id": "hydro", "icon": "hydro.png"},
+]
+
+
 
 # =====================
 # Launch app
@@ -30,44 +39,29 @@ app = Dash(__name__)
 app.layout = html.Div(
     [
         ### Title
-        html.H1("Mercado eléctrico: oferta y demanda escalonada"),
+        html.H1(f'{scenario["name"]}'),
 
 
         ### Technology blocks
         html.Div(
             [
                 technology_block(
-                    name="Gas",
-                    technology="gas",
+                    name=tech["name"],
+                    technology=tech["id"],
                     scenario=scenario,
-                    icon="img/gas.png",                    
-                    quantity_slider_id="gas_quantity",                    
-                    price_slider_id="gas_price",                                        
-                ),
-                technology_block(
-                    name="Hydro",
-                    technology="hydro",
-                    scenario=scenario,
-                    icon="img/hydro.png",                    
-                    quantity_slider_id="hydro_quantity",                    
-                    price_slider_id="hydro_price",  
-                ),
-                technology_block(
-                    name="Nuclear",
-                    technology="nuclear",
-                    scenario=scenario,
-                    icon="img/nuclear.png",                    
-                    quantity_slider_id="nuclear_quantity",                    
-                    price_slider_id="nuclear_price",                
-                ),
+                    icon=tech["icon"],
+                    quantity_slider_id=f"{tech['id']}_quantity",
+                    price_slider_id=f"{tech['id']}_price",
+                )
+                for tech in technologies
             ],
             style={
                 "display": "flex",
                 "justify-content": "center",
                 "flex-wrap": "wrap",
             }
-        ),       
-    
+        ),
+
 
         ### Plot and results
         dcc.Graph(id="market_curve"),
@@ -76,7 +70,7 @@ app.layout = html.Div(
             style={"margin-top": "20px", "font-weight": "bold"}
         ),
     ],
-    style={"width": "60%", "margin": "auto"},
+    style={"width": "90%", "margin": "auto"},
 ),
 
 
@@ -88,24 +82,46 @@ app.layout = html.Div(
 @app.callback(
     Output("market_curve", "figure"),
     Output("market_info", "children"),
+    Input("nuclear_quantity", "value"),
+    Input("nuclear_price", "value"),
+    Input("solar_wind_quantity", "value"),
+    Input("solar_wind_price", "value"),        
+    Input("coal_quantity", "value"),
+    Input("coal_price", "value"),
     Input("gas_quantity", "value"),
     Input("gas_price", "value"),
     Input("hydro_quantity", "value"),
     Input("hydro_price", "value"),
-    Input("nuclear_quantity", "value"),
-    Input("nuclear_price", "value"),
+
 )
 
 def update_market_curve(
+    nuclear_quantity,
+    nuclear_price,
+    solar_wind_quantity,
+    solar_wind_price,
+    coal_quantity,
+    coal_price,
     gas_quantity,
     gas_price,
     hydro_quantity,
     hydro_price, 
-    nuclear_quantity,
-    nuclear_price,
+
 ):
     # Supply bids
     supply_bids_dict = {
+        "nuclear": {            
+            "quantity": nuclear_quantity,
+            "price": nuclear_price,
+        },
+        "solar_wind": {            
+            "quantity": solar_wind_quantity,
+            "price": solar_wind_price,
+        },                
+        "coal": {            
+            "quantity": coal_quantity,
+            "price": coal_price,
+        },        
         "gas": {
             "quantity": gas_quantity,
             "price": gas_price,            
@@ -113,10 +129,6 @@ def update_market_curve(
         "hydro": {            
             "quantity": hydro_quantity,
             "price": hydro_price,
-        },
-        "nuclear": {            
-            "quantity": nuclear_quantity,
-            "price": nuclear_price,
         },
     }
 

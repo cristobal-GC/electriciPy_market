@@ -31,10 +31,15 @@ def technology_block(
 
     return html.Div(
         [
-            html.H3(name),
+            html.Img(
+                src=f"/assets/icons/{icon}",
+                style={"width": "80px"}                
+            ),
+
+            html.H2(name),
 
             technology_slider(
-                label="Quantity (MWh)",
+                label="Energy(GWh)",
                 slider_id=quantity_slider_id,
                 min_value=quantity_min,
                 max_value=quantity_max,
@@ -44,7 +49,7 @@ def technology_block(
                     quantity_min: str(quantity_min),
                     quantity_max: str(quantity_max),
                 },
-                icon=None  # put icon only once
+                icon=None
             ),
 
             technology_slider(
@@ -58,7 +63,7 @@ def technology_block(
                     0: str(0),
                     price_max: str(price_max),
                 },
-                icon=icon
+                icon=None
             ),            
 
         ],
