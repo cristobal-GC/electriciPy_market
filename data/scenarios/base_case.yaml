@@ -3,35 +3,45 @@ name: 'Scenario name'
 
 technologies:
 
-  nuclear:
+  nuclear:          # < id
+    name: Nuclear
     capacity_min: 10
     capacity_max: 10
     quantity_initial: 10
     price_initial: 5
+    icon: nuclear.png
 
   solar_wind:
+    name: "Solar-Wind"
     capacity_min: 0
     capacity_max: 20
     quantity_initial: 10
     price_initial: 10
+    icon: solar_wind.png
 
   coal:
+    name: Coal
     capacity_min: 10
     capacity_max: 10
     quantity_initial: 10
     price_initial: 35
+    icon: coal.png
 
   gas:
+    name: Gas
     capacity_min: 20
     capacity_max: 20
     quantity_initial: 10
     price_initial: 60
-    
+    icon: gas.png
+
   hydro:
+    name: hydro
     capacity_min: 0
     capacity_max: 15
     quantity_initial: 10
     price_initial: 65
+    icon: hydro.png
 
 
 demand:

@@ -1,0 +1,16 @@
+[workspace]
+authors = ["Cristobal Gallego-Castillo"]
+channels = ["conda-forge", "bioconda"]
+name = "electriciPy-market"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+python = ">=3.11"
+pandas = ">=2.3"
+dash = "*"
+plotly = "*"
+numpy = "*"
+pyyaml = "*"

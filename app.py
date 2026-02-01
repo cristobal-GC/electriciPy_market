@@ -1,9 +1,18 @@
-from dash import Dash, html, dcc, Input, Output
+
+from dash import Dash, html, dcc, Input, Output, dash_table
+import numpy as np
+
+from src.components.technology_block import technology_block
 from src.config.parameters import load_scenario
+from src.market.builders import build_supply_bids
+from src.market.model import compute_clearing_price
+from src.market.model import clear_market
+from src.market.model import compute_generation_by_tech
+from src.market.results import compute_market_results
 from src.plotting.data import step_supply_curve_data, step_demand_curve_data
 from src.plotting.plot import plot_market_curve
-from src.components.technology_block import technology_block
-import numpy as np
+from src.tables.summary import build_results_table
+
 
 
 
@@ -12,17 +21,9 @@ import numpy as np
 # =====================
 scenario = load_scenario()
 
-##### Initial parameters
-demand_bids_dict = scenario["demand"]
+technologies_dic = scenario["technologies"]
+demand_dic = scenario["demand"]
 
-
-technologies = [
-    {"name": "Nuclear", "id": "nuclear", "icon": "nuclear.png"},
-    {"name": "Solar-Wind", "id": "solar_wind", "icon": "solar_wind.png"},
-    {"name": "Coal", "id": "coal", "icon": "coal.png"},
-    {"name": "Gas", "id": "gas", "icon": "gas.png"},
-    {"name": "Hydro", "id": "hydro", "icon": "hydro.png"},
-]
 
 
 
@@ -30,6 +31,8 @@ technologies = [
 # Launch app
 # =====================
 app = Dash(__name__)
+
+
 
 
 
@@ -46,14 +49,14 @@ app.layout = html.Div(
         html.Div(
             [
                 technology_block(
-                    name=tech["name"],
-                    technology=tech["id"],
+                    name=tech_value["name"],
+                    technology=tech_key,
                     scenario=scenario,
-                    icon=tech["icon"],
-                    quantity_slider_id=f"{tech['id']}_quantity",
-                    price_slider_id=f"{tech['id']}_price",
+                    icon=tech_value["icon"],
+                    quantity_slider_id=f"{tech_key}_quantity",
+                    price_slider_id=f"{tech_key}_price",
                 )
-                for tech in technologies
+                for tech_key, tech_value in technologies_dic.items()
             ],
             style={
                 "display": "flex",
@@ -69,9 +72,25 @@ app.layout = html.Div(
             id="market_info",
             style={"margin-top": "20px", "font-weight": "bold"}
         ),
+
+
+        ### Table
+        dash_table.DataTable(
+            id="results_table",
+            columns=[
+                {"name": "Tecnología", "id": "tech"},
+                {"name": "Generación", "id": "generation"},
+                {"name": "Ganancia", "id": "profit"},
+                # etc según lo que devuelva build_results_table
+            ],
+            data=[],
+            style_table={"width": "100%"},
+            style_cell={"textAlign": "center"},
+        ),
     ],
-    style={"width": "90%", "margin": "auto"},
-),
+    style={"width": "90%", "margin": "auto"}
+)
+
 
 
 
@@ -79,86 +98,67 @@ app.layout = html.Div(
 # =====================
 # App callback
 # =====================
+#
+# Cada callback define unos inputs y unos outputs. 
+# Los outputs se conectan con los outpus que se declaran a continuación
+# El nombre de esa función es arbitrario, para claridad humana
+# La función se ejecuta cada vez que cambian los inputs
+# Tiene sentido tener varios callbacks si los inputs son distintos, pero aquí no es el caso necesariamente
+
+
+##### Inputs
+# Genera lista:
+#   [ 
+#     Input("Nuclear_quantity", "value"),
+#     Input("Nuclear_price", "value"),  
+#     Input("solar_wind_quantity", "value"),  
+#     Input("solar_wind_price", "value"),  
+#     ...
+#   ]
+#
+
+inputs = [
+    Input(f"{tech_key}_{field}", "value")
+    for tech_key in technologies_dic.keys()
+    for field in ("quantity", "price")
+]
+
+
 @app.callback(
     Output("market_curve", "figure"),
-    Output("market_info", "children"),
-    Input("nuclear_quantity", "value"),
-    Input("nuclear_price", "value"),
-    Input("solar_wind_quantity", "value"),
-    Input("solar_wind_price", "value"),        
-    Input("coal_quantity", "value"),
-    Input("coal_price", "value"),
-    Input("gas_quantity", "value"),
-    Input("gas_price", "value"),
-    Input("hydro_quantity", "value"),
-    Input("hydro_price", "value"),
-
+    Output("results_table", "data"),
+    *inputs
 )
 
-def update_market_curve(
-    nuclear_quantity,
-    nuclear_price,
-    solar_wind_quantity,
-    solar_wind_price,
-    coal_quantity,
-    coal_price,
-    gas_quantity,
-    gas_price,
-    hydro_quantity,
-    hydro_price, 
 
-):
-    # Supply bids
-    supply_bids_dict = {
-        "nuclear": {            
-            "quantity": nuclear_quantity,
-            "price": nuclear_price,
-        },
-        "solar_wind": {            
-            "quantity": solar_wind_quantity,
-            "price": solar_wind_price,
-        },                
-        "coal": {            
-            "quantity": coal_quantity,
-            "price": coal_price,
-        },        
-        "gas": {
-            "quantity": gas_quantity,
-            "price": gas_price,            
-        },
-        "hydro": {            
-            "quantity": hydro_quantity,
-            "price": hydro_price,
-        },
-    }
+def update_market(*values):
 
-    # Supply and demand curves
-    offer_x, offer_y = step_supply_curve_data(supply_bids_dict)
-    demand_x, demand_y = step_demand_curve_data(demand_bids_dict)
+    supply = build_supply_bids(technologies_dic, values)
 
-    # Precio de casación (criterio simple)
-    clearing_price = None
-    for px, py in zip(offer_x, offer_y):
-        demand_at_px = np.interp(px, demand_x, demand_y)
-        if py >= demand_at_px:
-            clearing_price = py
-            break
+    market_state = clear_market(supply, demand_dic)
 
-    if clearing_price is None:
-        clearing_price = offer_y[-1]
+    results = compute_market_results(market_state)
 
     fig = plot_market_curve(
-        offer_x,
-        offer_y,
-        demand_x,
-        demand_y,
-        clearing_price,
+        *market_state["offer_curve"],
+        *market_state["demand_curve"],
+        market_state["clearing_price"]
     )
 
-    info_text = f"Precio de casación aproximado: {clearing_price} €/MWh"
+    table_data = build_results_table(results)
 
-    return fig, info_text
+    return fig, table_data
 
 
+
+
+# =====================
+# App run
+# =====================
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+
+
