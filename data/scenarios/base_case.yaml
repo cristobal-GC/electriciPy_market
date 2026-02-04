@@ -1,15 +1,24 @@
-name: 'Scenario name'
+name: 'Base case'
+
 
 
 technologies:
 
-  nuclear:          # < id
+  nuclear:
     name: Nuclear
     capacity_min: 10
     capacity_max: 10
     quantity_initial: 10
     price_initial: 5
     icon: nuclear.png
+
+  hydro:
+    name: Hydro
+    capacity_min: 0
+    capacity_max: 15
+    quantity_initial: 10
+    price_initial: 65
+    icon: hydro.png
 
   solar_wind:
     name: "Solar-Wind"
@@ -31,17 +40,10 @@ technologies:
     name: Gas
     capacity_min: 20
     capacity_max: 20
-    quantity_initial: 10
+    quantity_initial: 20
     price_initial: 60
     icon: gas.png
 
-  hydro:
-    name: hydro
-    capacity_min: 0
-    capacity_max: 15
-    quantity_initial: 10
-    price_initial: 65
-    icon: hydro.png
 
 
 demand:
@@ -52,10 +54,12 @@ demand:
     price: 20
     quantity: 2
   off3:
-    price: 10
-    quantity: 5
+    price: 0
+    quantity: 25
 
 
-quantity_step: 1
-price_max: 180
-price_step: 1
+
+config:
+  quantity_step: 1
+  price_max: 180
+  price_step: 1

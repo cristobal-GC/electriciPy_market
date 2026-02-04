@@ -3,7 +3,7 @@ from dash import html, dcc
 def technology_slider(
     *,
     label: str,
-    slider_id: str,
+    slider_id: dict,
     min_value: float,
     max_value: float,
     step: float,
