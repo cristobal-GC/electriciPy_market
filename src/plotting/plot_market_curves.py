@@ -1,7 +1,10 @@
 import pandas as pd
 import plotly.graph_objects as go
 
-def plot_market_curves(df_supply: pd.DataFrame, df_demand: pd.DataFrame) -> go.Figure:
+def plot_market_curves(df_supply: pd.DataFrame,
+                       df_demand: pd.DataFrame,
+                       clearing_price: float,
+                       cleared_quantity: float) -> go.Figure:
     """
     Dibuja la curva de oferta y la curva de demanda en la misma figura.
     Ambos DataFrames deben tener columnas:
@@ -36,32 +39,93 @@ def plot_market_curves(df_supply: pd.DataFrame, df_demand: pd.DataFrame) -> go.F
         go.Scatter(
             x=x_supply,
             y=y_supply,
-            mode="lines",
-            name="Oferta",
+            mode="lines+markers",
+            name="Supply",
             line_shape="hv",
-            marker=dict(color="green")
+            line=dict(color="green", width=3),  # <--- grosor de línea
+            marker=dict(color="green", symbol="circle", size=10)
         )
     )
     fig.add_trace(
         go.Scatter(
             x=x_demand,
             y=y_demand,
-            mode="lines",
-            name="Demanda",
+            mode="lines+markers",
+            name="Demand",
             line_shape="hv",
-            marker=dict(color="red")
+            line=dict(color="red", width=3),  # <--- grosor de línea
+            marker=dict(color="red", symbol="circle", size=10)
+        )
+    )
+
+    # --- Punto de clearing ---
+    fig.add_trace(
+        go.Scatter(
+            x=[cleared_quantity],
+            y=[clearing_price],
+            mode="markers",
+            name="Market clearing",
+            marker=dict(color="black",
+                        size=15,           
+                        symbol="diamond-open",
+                        line=dict(width=3)
+            )
+        )
+    )
+
+    # --- Línea vertical (cantidad clearing) ---
+    fig.add_trace(
+        go.Scatter(
+            x=[cleared_quantity, cleared_quantity],
+            y=[0, clearing_price],
+            mode="lines",
+            showlegend=False,
+            line=dict(
+                color="black",
+                dash="dot",
+                width=1
+            )
+        )
+    )
+
+    # --- Línea horizontal (precio clearing) ---
+    fig.add_trace(
+        go.Scatter(
+            x=[0, cleared_quantity],
+            y=[clearing_price, clearing_price],
+            mode="lines",
+            showlegend=False,
+            line=dict(
+                color="black",
+                dash="dot",
+                width=1
+            )
         )
     )
 
     # Ajustes de layout
     max_price = max(df_supply_sorted["price"].max(), df_demand_sorted["price"].max()) * 1.05
     fig.update_layout(
-        title="Curva de Mercado",
-        xaxis_title="Cantidad acumulada (MWh)",
-        yaxis_title="Precio (EUR)",
-        yaxis=dict(range=[0, max_price]),
-        template="plotly_white",
-        height=500
+        #title="Curva de Mercado",
+        xaxis_title="Energy (MWh)",
+        yaxis_title="Price (EUR/MWh)",
+        xaxis=dict(tickfont=dict(size=22),   # tamaño de números eje x
+                   title_font=dict(size=26)  # tamaño del título del eje x
+        ),
+        yaxis=dict(range=[0, max_price],
+                   tickfont=dict(size=22),   # tamaño de números eje y
+                   title_font=dict(size=26)  # tamaño del título del eje y
+        ),
+        legend=dict(x=0.75,        # posición horizontal (0=izquierda, 1=derecha)
+                    y=0.97,        # posición vertical (0=abajo, 1=arriba)
+                    bgcolor="rgba(255,255,255,0.7)",  # fondo semitransparente
+                    bordercolor="black",
+                    borderwidth=1,
+                    font=dict(size=18)
+        ),        
+        template="plotly", # "plotly_white",
+        height=600,
+        #width=1200
     )
 
     return fig

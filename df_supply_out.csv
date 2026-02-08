@@ -1,6 +1,0 @@
-,technology,price,quantity,cleared_quantity,clearing_price
-0,nuclear,5,10,10.0,35
-2,solar_wind,10,10,10.0,35
-3,coal,35,10,0.0,35
-4,gas,60,20,0.0,35
-1,hydro,65,10,0.0,35

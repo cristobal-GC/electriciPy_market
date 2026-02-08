@@ -1,91 +1,96 @@
-
-
 import pandas as pd
 
 
-
-def clear_market(
-    *,
-    df_supply: pd.DataFrame,
-    df_demand: pd.DataFrame,
-):
+def clear_market(*, df_supply: pd.DataFrame, df_demand: pd.DataFrame):
     """
-    Market clearing with stepwise supply and demand curves.
+    Market clearing with stepwise supply and demand curves (pay-as-cleared).
 
-    df_supply columns: ["technology", "price", "quantity"]
-    df_demand columns: ["price", "quantity"]
+    - Handles multiple supply offers at the same price.
+    - Prorates marginal offers if needed.
+    - Supports zero-price offers.
+    - Quantities can be fractional (float), no int64 issues.
 
-    Returns:
-        clearing_price (float)
-        cleared_quantity (float)
-        df_supply_cleared (with cleared_quantity column)
+    Parameters
+    ----------
+    df_supply : pd.DataFrame
+        Columns: ["technology" (optional), "price", "quantity"]
+    df_demand : pd.DataFrame
+        Columns: ["price", "quantity"]
 
-    Logic:
-
-        1. Define candidate prices
-          The clearing price can only be one of the prices that actually appear in the market:
-          prices from the supply offers or prices from the demand bids.
-
-        2. Evaluate supply and demand at each candidate price
-           For each candidate price p:
-
-            · compute total supplied quantity from offers with price ≤ p
-
-            · compute total demanded quantity from bids with price ≥ p
-
-        3. Select the clearing price
-          The clearing price is the lowest price p for which total supply is greater than or equal to total demand.
-        The cleared quantity is the minimum of supply and demand at that price.
+    Returns
+    -------
+    clearing_price : float
+        Price of the marginal accepted supply offer.
+    cleared_quantity : float
+        Total matched quantity.
+    df_supply_cleared : pd.DataFrame
+        Same as df_supply plus:
+        - "cleared_quantity": quantity accepted from each offer
+        - "clearing_price": same value for all rows
     """
 
-    # --- Unique candidate prices ---
-    candidate_prices = sorted(
-        set(df_supply["price"]).union(df_demand["price"])
-    )
+    # --- Preparar DataFrames ---
+    supply = df_supply.sort_values("price").reset_index(drop=True).copy()
+    demand = df_demand.sort_values("price", ascending=False).reset_index(drop=True).copy()
 
+    # Columnas para tracking
+    supply["remaining"] = supply["quantity"].astype(float)
+    demand["remaining"] = demand["quantity"].astype(float)
+
+    cleared_quantity = 0.0
     clearing_price = None
-    cleared_quantity = None
 
-    # --- Find clearing price ---
-    for p in candidate_prices:
-        q_supply = df_supply.loc[df_supply["price"] <= p, "quantity"].sum()
-        q_demand = df_demand.loc[df_demand["price"] >= p, "quantity"].sum()
+    i = j = 0
 
-        if q_supply >= q_demand:
-            clearing_price = p
-            cleared_quantity = min(q_supply, q_demand)
+    # --- Fase 1: casar cantidades MWh a MWh, determinar precio marginal ---
+    while i < len(supply) and j < len(demand):
+        if supply.loc[i, "price"] > demand.loc[j, "price"]:
+            break  # no hay más coincidencias
+
+        # Cantidad casada en este escalón
+        q = min(supply.loc[i, "remaining"], demand.loc[j, "remaining"])
+        if q <= 0:
             break
 
-    if clearing_price is None:
+        cleared_quantity += q
+        clearing_price = supply.loc[i, "price"]
+
+        # Reducir las cantidades restantes
+        supply.loc[i, "remaining"] -= q
+        demand.loc[j, "remaining"] -= q
+
+        if supply.loc[i, "remaining"] == 0:
+            i += 1
+        if demand.loc[j, "remaining"] == 0:
+            j += 1
+
+    if cleared_quantity == 0:
         # No intersection
-        return None, 0.0, df_supply.assign(cleared_quantity=0.0)
+        return None, 0.0, df_supply.assign(
+            cleared_quantity=0.0,
+            clearing_price=None
+        )
 
-    # --- Allocate cleared quantities on supply side ---
-    df_supply_cleared = df_supply.sort_values("price").copy()
-    df_supply_cleared["cleared_quantity"] = 0.0
+    # --- Fase 2: asignación final ---
+    df_supply_cleared = supply.copy()
+    # Inicializamos como float para evitar errores int64
+    df_supply_cleared["cleared_quantity"] = (df_supply_cleared["quantity"] - df_supply_cleared["remaining"]).astype(float)
 
-    # Fully accepted offers
-    mask_lower = df_supply_cleared["price"] < clearing_price
-    df_supply_cleared.loc[mask_lower, "cleared_quantity"] = df_supply_cleared.loc[mask_lower, "quantity"]
-
-    quantity_before = df_supply_cleared.loc[mask_lower, "quantity"].sum()
-    remaining_quantity = cleared_quantity - quantity_before
-    remaining_quantity = max(0.0, remaining_quantity)
-
-    # Marginal offers
+    # Pro-rata entre ofertas marginales (si hay varias al mismo precio)
     mask_marginal = df_supply_cleared["price"] == clearing_price
-    marginal_total = df_supply_cleared.loc[mask_marginal, "quantity"].sum()
+    marginal_total = df_supply.loc[df_supply["price"] == clearing_price, "quantity"].sum()
 
     if marginal_total > 0:
-        share = remaining_quantity / marginal_total
+        # Cantidad ya cubierta por ofertas más baratas
+        quantity_before = df_supply_cleared.loc[df_supply_cleared["price"] < clearing_price, "cleared_quantity"].sum()
+        remaining = cleared_quantity - quantity_before
+        share = remaining / marginal_total
         share = min(1.0, share)
 
         df_supply_cleared.loc[mask_marginal, "cleared_quantity"] = (
             df_supply_cleared.loc[mask_marginal, "quantity"] * share
         )
 
-
-    # Add column with clearing price
     df_supply_cleared["clearing_price"] = clearing_price
 
     return clearing_price, cleared_quantity, df_supply_cleared
