@@ -91,6 +91,12 @@ def clear_market(*, df_supply: pd.DataFrame, df_demand: pd.DataFrame):
             df_supply_cleared.loc[mask_marginal, "quantity"] * share
         )
 
+
+    ##### Add clearing price column
     df_supply_cleared["clearing_price"] = clearing_price
 
-    return clearing_price, cleared_quantity, df_supply_cleared
+    ##### Add market incomes column
+    df_supply_cleared["market_incomes"] = df_supply_cleared['cleared_quantity']*clearing_price
+
+
+    return clearing_price, cleared_quantity, df_supply_cleared.set_index("technology")

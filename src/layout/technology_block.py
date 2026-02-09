@@ -35,13 +35,13 @@ def technology_block(
         [
             html.Img(
                 src=f"/assets/icons/{icon}",
-                style={"width": "80px"}                
+                style={"width": "120px"}                
             ),
 
             html.H2(name),
 
             technology_slider(
-                label="Energy(GWh)",                
+                label="Energy (GWh)",                
                 slider_id={
                     "type": "tech-slider",
                     "tech": tech_key,
@@ -52,8 +52,8 @@ def technology_block(
                 step=quantity_step,
                 value=quantity_initial,
                 marks={
-                    quantity_min: str(quantity_min),
-                    quantity_max: str(quantity_max),
+                    quantity_min: {"label": str(quantity_min), "style": {"fontSize": "20px"}},  # Fix Marker size 
+                    quantity_max: {"label": str(quantity_max), "style": {"fontSize": "20px"}},  # Fix Marker size 
                 },
                 icon=None
             ),
@@ -70,8 +70,8 @@ def technology_block(
                 step=price_step,
                 value=price_initial,
                 marks={
-                    0: str(0),
-                    price_max: str(price_max),
+                    0: {"label": str(0), "style": {"fontSize": "20px"}},                  # Fix Marker size 
+                    price_max: {"label": str(price_max), "style": {"fontSize": "20px"}}   # Fix Marker size 
                 },
                 icon=None
             ),            
@@ -80,8 +80,8 @@ def technology_block(
         style={
             "border": "1px solid #ddd",
             "padding": "15px",
-            "margin-bottom": "25px",
-            "border-radius": "6px",
-            "width": "350px",
+            "margin-bottom": "5px",   # Vertical separation between rows of blocks
+            "border-radius": "10px",
+            "width": "450px",
         }
     )

@@ -108,15 +108,15 @@ def plot_market_curves(df_supply: pd.DataFrame,
     fig.update_layout(
         #title="Curva de Mercado",
         xaxis_title="Energy (MWh)",
-        yaxis_title="Price (EUR/MWh)",
+        yaxis_title="Price (€/MWh)",
         xaxis=dict(tickfont=dict(size=22),   # tamaño de números eje x
                    title_font=dict(size=26)  # tamaño del título del eje x
         ),
-        yaxis=dict(range=[0, max_price],
+        yaxis=dict(range=[-2, max_price],
                    tickfont=dict(size=22),   # tamaño de números eje y
                    title_font=dict(size=26)  # tamaño del título del eje y
         ),
-        legend=dict(x=0.75,        # posición horizontal (0=izquierda, 1=derecha)
+        legend=dict(x=0.70,        # posición horizontal (0=izquierda, 1=derecha)
                     y=0.97,        # posición vertical (0=abajo, 1=arriba)
                     bgcolor="rgba(255,255,255,0.7)",  # fondo semitransparente
                     bordercolor="black",
@@ -124,7 +124,7 @@ def plot_market_curves(df_supply: pd.DataFrame,
                     font=dict(size=18)
         ),        
         template="plotly", # "plotly_white",
-        height=600,
+        height=700,
         #width=1200
     )
 

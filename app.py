@@ -4,10 +4,11 @@ import pandas as pd
 from dash import Dash, html, dcc, dash_table, Input, Output, ALL, ctx
 
 from src.config.parameters import load_scenario
+from src.layout.dispatch_table_format import dispatch_table_format
 from src.layout.technology_block import technology_block
 from src.market.clear_market import clear_market
+from src.market.dispatch_table import dispatch_table
 from src.plotting.plot_market_curves import plot_market_curves
-from src.tables.prepare_dispatch_table import prepare_dispatch_table
 
 
 
@@ -66,7 +67,7 @@ app.layout = html.Div(
                 "display": "flex",
                 "justify-content": "center",
                 "flex-wrap": "wrap",
-                "marginBottom": "30px"
+                "gap": "30px"  # horizontal and vertical space between blocks
             }
         ),
 
@@ -79,8 +80,9 @@ app.layout = html.Div(
                 html.Div(
                     dcc.Graph(id="market_curve"),
                     style={
-                        "width": "45%",   # ancho del gráfico
-                        "marginRight": "20px"  # espacio entre gráfico y tabla
+                        "width": "40%",   # ancho del gráfico
+                        #"flex": 1,
+                        "marginRight": "10px"  # espacio entre gráfico y tabla
                     }
                 ),
 
@@ -88,36 +90,32 @@ app.layout = html.Div(
                 html.Div(
                     dash_table.DataTable(
                         id="df_outputs",
-                        page_size=10,
+                        page_size=20,
                         style_cell={
                             'fontSize': 20,
                             'fontFamily': 'sans-serif',  # fuente clara y moderna
                             'textAlign': 'center',
                             'minWidth': '100px',
-                            #'maxWidth': '120px',
+                            #'maxWidth': '150px',
                         },
                         style_header={
                             'backgroundColor': "#C4DAF1",
                             'fontWeight': 'bold',
-                            'fontSize': 24,
+                            'fontSize': 22,
                             'textAlign': 'center'
                         },
-                         style_data_conditional=[
-                            # filas pares → blanco
-                            {'if': {'row_index': 'even'}, 'backgroundColor': 'white'},
-                            # filas impares → gris claro
-                            {'if': {'row_index': 'odd'}, 'backgroundColor': "#F4F4F4"},
-                        ]
+                         style_data_conditional=dispatch_table_format()
                     ),
                     style={
-                        "width": "35%",   # ancho de la tabla
+                        "width": "40%",   # Table width
+                        #"flex": 2,
                     }
                 ),
             ],
             style={
                 "display": "flex",
                 "justify-content": "center",
-                "align-items": "center",  # ⚠ aquí cambia flex-start → center
+                "align-items": "center",
                 "marginBottom": "30px"
             }
         ),
@@ -220,12 +218,9 @@ def update_market(values):
 
 
     #################### Preparar datos para DataTable de monitorización
-    rename_map = {"price": "Market price (EUR/MWh)",
-                  "quantity": "Cantidad (MWh)",
-                  "cleared_quantity": "Cantidad casada (MWh)",                  
-    }
-
-    data, columns = prepare_dispatch_table(df_supply_cleared.round(2), rename_vars=rename_map)
+    data, columns = dispatch_table(df_supply_cleared=df_supply_cleared.round(2),
+                                   technologies_dic=technologies_dic,
+                                   config_dic=config_dic)
 
     
     return fig, data, columns
@@ -240,7 +235,7 @@ def update_market(values):
 # App run
 # =====================
 if __name__ == "__main__":
-    app.run(debug=True, port=8052)   ##### port by default, 8050
+    app.run(debug=True, port=8050)   ##### port by default, 8050
 
 
 

@@ -10,7 +10,7 @@ def technology_slider(
     value: float,
     marks: dict,
     icon: str | None = None,
-    width: str = "300px"
+    width: str = "400px"
 ):
     """
     Generic slider for a generic technology
@@ -22,7 +22,11 @@ def technology_slider(
 
     slider_block = html.Div(
         [
-            html.Label(label),
+            html.Label(label, style={"fontSize": "18px", 
+                                     "display": "block",      # <--- esto permite textAlign
+                                     "textAlign": "left"
+                                     }
+            ),
             dcc.Slider(
                 id=slider_id,
                 min=min_value,
@@ -32,7 +36,7 @@ def technology_slider(
                 marks=marks,
                 tooltip={"placement": "bottom",
                          "always_visible": True,
-                         "style": {"color": "White", "fontSize": "18"}
+                         "style": {"color": "White", "fontSize": "15px"}
                          }
             ),
         ],

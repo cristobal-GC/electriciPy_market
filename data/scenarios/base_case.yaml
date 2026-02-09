@@ -6,10 +6,11 @@ technologies:
 
   nuclear:
     name: Nuclear
-    capacity_min: 10
+    capacity_min: 0
     capacity_max: 10
     quantity_initial: 10
     price_initial: 5
+    unitary_cost: 10
     icon: nuclear.png
 
   hydro:
@@ -18,6 +19,7 @@ technologies:
     capacity_max: 15
     quantity_initial: 10
     price_initial: 65
+    unitary_cost: 0
     icon: hydro.png
 
   solar_wind:
@@ -26,22 +28,26 @@ technologies:
     capacity_max: 20
     quantity_initial: 10
     price_initial: 10
+    unitary_cost: 0
+    potential: 15
     icon: solar_wind.png
 
   coal:
     name: Coal
-    capacity_min: 10
+    capacity_min: 0
     capacity_max: 10
     quantity_initial: 10
     price_initial: 35
+    unitary_cost: 40
     icon: coal.png
 
   gas:
     name: Gas
-    capacity_min: 20
+    capacity_min: 0
     capacity_max: 20
     quantity_initial: 20
     price_initial: 60
+    unitary_cost: 60
     icon: gas.png
 
 
@@ -63,3 +69,4 @@ config:
   quantity_step: 1
   price_max: 180
   price_step: 1
+  unitary_penalty_fraction: 0.1   # Penalty price is market price increased by this fraction per deviation unit
