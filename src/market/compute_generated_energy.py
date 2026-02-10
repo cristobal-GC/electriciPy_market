@@ -1,4 +1,4 @@
-def compute_generated_energy(tech, technologies_dic, df):    
+def compute_generated_energy(tech, technologies_dic, df, hydro_reserves):    
 
     
     # Nuclear: must generate at maximum capacity
@@ -7,9 +7,17 @@ def compute_generated_energy(tech, technologies_dic, df):
 
 
     # Dispatchable tecnhologies: generation matches sold energy
-    if tech in ['gas', 'hydro', 'coal']:
+    if tech in ['gas', 'coal']:
         return df.at[tech, "Sold energy"]
+    
 
+    # Dispatchable tecnhologies with availability constraints: hydro with hydro_reserves
+    if tech == 'hydro':
+        return min(
+            df.at[tech, "Sold energy"],
+            hydro_reserves
+        )
+    
 
     # Intermittent generation: the minimum between sold energy and potential generation
     if tech == "solar_wind":

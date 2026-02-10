@@ -9,30 +9,40 @@ from src.market.compute_generated_energy import compute_generated_energy
 def dispatch_table(*,
                    df_supply_cleared: pd.DataFrame,
                    technologies_dic: dict,
-                   config_dic: dict
+                   config_dic: dict,
+                   hydro_reserves: float
 ):
     """
-    Convierte df_supply_cleared en formato transpuesto para Dash DataTable,
-    mostrando tecnologías como columnas y variables (price, quantity, cleared_quantity, etc.) como filas.
+    Converts `df_supply_cleared` into a transposed format for Dash DataTables,
+    displaying technologies as columns and variables (price, quantity, cleared_quantity, etc.) as rows.
+    
 
-    Parámetros
+    Inputs
     ----------
-    df_supply_cleared : pd.DataFrame
-        DataFrame con columnas como 'technology', 'price', 'quantity', 'cleared_quantity', etc.
-    rename_vars : dict, opcional
-        Diccionario para renombrar las filas (índices de df transpuesto).
-        Ejemplo: {'price': 'Precio (EUR/MWh)', 'quantity': 'Cantidad (MWh)'}
 
-    Retorna
+    df_supply_cleared : pd.DataFrame
+        
+         technology || price | quantity | remaining | cleared_quantity | clearing_price | market_incomes
+         -----------++-------+------------+---------+------------------+----------------+----------------
+          solar     || 30    | 100      |    ...
+          wind      || 25    |  80      |    ...
+          gas       || 90    | 200      |    ...    
+
+
+    ...
+
+
+    Outputs
     -------
+
     data : list[dict]
-        Lista de diccionarios fila a fila, lista para usar en dash.DataTable
+         List of dictionaries row by row, ready to use in dash.DataTable
+
     columns : list[dict]
-        Definición de columnas para dash.DataTable
+        Columns definition for dash.DataTable
     """
 
-
-   
+  
 
     ##### Create df by selecting and renaming specific columns from df_supply_cleared
     df = (
@@ -58,8 +68,10 @@ def dispatch_table(*,
     for tech in df.index:
         df.at[tech, "Generated energy"] = compute_generated_energy(tech=tech,
                                                                    technologies_dic=technologies_dic,
-                                                                   df=df
+                                                                   df=df,
+                                                                   hydro_reserves=hydro_reserves
                                                                    )
+
 
 
     ##### Add unitary variable costs
@@ -81,7 +93,7 @@ def dispatch_table(*,
 
 
     ##### Add penalty price    
-    df['Penalty price'] =  penalty_factor * df['Market price']
+    df['Penalty price'] =  (penalty_factor * df['Market price']).round(2)
 
 
     ##### Add penalty

@@ -5,7 +5,10 @@ from dash import Dash, html, dcc, dash_table, Input, Output, ALL, ctx
 
 from src.config.parameters import load_scenario
 from src.layout.dispatch_table_format import dispatch_table_format
+from src.layout.market_block import market_block
 from src.layout.technology_block import technology_block
+from src.market.build_df_demand import build_df_demand
+from src.market.build_df_supply import build_df_supply
 from src.market.clear_market import clear_market
 from src.market.dispatch_table import dispatch_table
 from src.plotting.plot_market_curves import plot_market_curves
@@ -24,7 +27,8 @@ technologies_dic = scenario["technologies"]
 demand_dic = scenario["demand"]
 config_dic = scenario["config"]
 
-
+### Compute expected demand
+expected_demand = sum(d["quantity"] for d in demand_dic.values())
 
 
 
@@ -51,28 +55,50 @@ app.layout = html.Div(
                    "marginBottom": "30px"}
         ),
 
+
+
+
+
         # =====================
         # Technology blocks
         # =====================
         html.Div(
             [
-                technology_block(
-                    tech_key=tech_key,
-                    tech_dic=tech_value,
-                    config_dic=config_dic
-                )
-                for tech_key, tech_value in technologies_dic.items()
+                # Market block
+                market_block(
+                    expected_demand=expected_demand,
+                    hydro_reserves=30
+                ),
+
+                # Technology blocks
+                html.Div(
+                    [
+                        technology_block(
+                            tech_key=tech_key,
+                            tech_dic=tech_value,
+                            config_dic=config_dic
+                        )
+                        for tech_key, tech_value in technologies_dic.items()
+                    ],
+                    style={
+                        "display": "flex",
+                        "flexWrap": "wrap",
+                        "gap": "30px"
+                    }
+                ),
             ],
             style={
                 "display": "flex",
-                "justify-content": "center",
-                "flex-wrap": "wrap",
-                "gap": "30px"  # horizontal and vertical space between blocks
+                "justifyContent": "center",
+                "alignItems": "flex-start",
+                "gap": "30px",
+                "marginBottom": "30px"
             }
         ),
 
+
         # =====================
-        # Graph + Table side by side
+        # Graph + Table side-by-side
         # =====================
         html.Div(
             [
@@ -80,9 +106,9 @@ app.layout = html.Div(
                 html.Div(
                     dcc.Graph(id="market_curve"),
                     style={
-                        "width": "40%",   # ancho del gráfico
+                        "width": "40%",                     # figure width
                         #"flex": 1,
-                        "marginRight": "10px"  # espacio entre gráfico y tabla
+                        "marginRight": "10px"               # gap between figure and table
                     }
                 ),
 
@@ -93,10 +119,10 @@ app.layout = html.Div(
                         page_size=20,
                         style_cell={
                             'fontSize': 20,
-                            'fontFamily': 'sans-serif',  # fuente clara y moderna
+                            'fontFamily': 'sans-serif',
                             'textAlign': 'center',
-                            'minWidth': '100px',
-                            #'maxWidth': '150px',
+                            'minWidth': '100px',            # cell width
+                            #'maxWidth': '150px'
                         },
                         style_header={
                             'backgroundColor': "#C4DAF1",
@@ -107,7 +133,7 @@ app.layout = html.Div(
                          style_data_conditional=dispatch_table_format()
                     ),
                     style={
-                        "width": "40%",   # Table width
+                        "width": "40%",                     # table width
                         #"flex": 2,
                     }
                 ),
@@ -126,86 +152,75 @@ app.layout = html.Div(
 
 
 
+
 # =====================
 # App callback
 # =====================
 #
-# Cada callback define unos inputs y unos outputs.
-# Posteriormente se define una función (con nombre arbitrario) 
-# Los outputs de esa función se conectan con los outpus que se declaran en el callback
-# La función se ejecuta cada vez que cambian los inputs
-# Tiene sentido tener varios callbacks si los inputs son distintos, pero aquí no es el caso necesariamente
+# Each callback defines inputs and outputs.
+# Subsequently, a function (with an arbitrary name) is defined.
+# The outputs of that function are connected to the outputs declared in the callback.
+# The function is executed every time the inputs change.
+# It makes sense to have multiple callbacks if the inputs are different, but that's not necessarily the case here.
+#
+##### Inputs:
+# The slider values ​​have structured IDs,
+# This allows them to be easily retrieved without needing to be strict about the order
 
-
-
-##### Inputs
-# Los valores de los sliders tienen id estructurados, 
-# lo que permite capturarlos fácilmente ahora sin necesidad de ser estrictos con el orden
 
 @app.callback(
     Output("market_curve", "figure"),
     Output("df_outputs", "data"),
     Output("df_outputs", "columns"),
-    Input({"type": "tech-slider", "tech": ALL, "field": ALL}, "value"),    
+    Input({"type": "tech-slider", "tech": ALL, "field": ALL}, "value"),  
+    Input({"type": "hydro-reserve"}, "value"),  
 )
 
 
-def update_market(values): 
+def update_market(slider_values, hydro_reserve_value):   # slider_values is not used, but this parameter is required in Dash for coherence
+
+
+
+    print("TRIGGER:", ctx.triggered_id)
+
+    slider_inputs = ctx.inputs_list[0]
+
+    hydro_reserves = ctx.inputs_list[1]["value"]
+
     
-    #################### Put all the slider values in df_supply:
+    #################### Put all the slider values into df_supply:
     #
-    # id | technology | price | quantity
-    # ---+------------+-------+----------
-    #  0 | solar      | 30    | 100
-    #  1 | wind       | 25    |  80
-    #  2 | gas        | 90    | 200
+    # id || technology | price | quantity
+    # ---++------------+-------+----------
+    #  0 || solar      | 30    | 100
+    #  1 || wind       | 25    |  80
+    #  2 || gas        | 90    | 200
     #
-    inputs = ctx.inputs_list[0]
-    rows = []
-
-    for input_item in inputs:
-        slider_id = input_item["id"]
-        value = input_item["value"]
-        tech = slider_id["tech"]
-        field = slider_id["field"]  # 'price' o 'quantity'
-
-        # Buscar si ya existe la fila para esta tecnología
-        row = next((r for r in rows if r["technology"] == tech), None)
-        if row is None:
-            # Crear nueva fila
-            row = {"technology": tech, "price": None, "quantity": None}
-            rows.append(row)
-
-        # Asignar el valor correcto
-        row[field] = value
-
-    # Convertir a DataFrame
-    df_supply = pd.DataFrame(rows)
+    
+    df_supply = build_df_supply(slider_inputs)
 
 
 
     #################### Put the demand info from scenario dic into df_demand:
     #
-    # id | price | quantity
-    # ---+------------+-------+----------
-    #  0 | 30    | 100
-    #  1 | 25    |  10
-    #  2 |  0    |   5
+    # id || price | quantity
+    # ---++-------+----------
+    #  0 || 30    | 100
+    #  1 || 25    |  10
+    #  2 ||  0    |   5
     #
-    df_demand = pd.DataFrame([
-        {"price": d["price"], "quantity": d["quantity"]}
-        for d in demand_dic.values()
-    ])
+    df_demand = build_df_demand(demand_dic)
 
 
 
     #################### Clear market
     #
     # Add columns 'remaining', 'cleared_quantity' and 'cleared_price'
-    clearing_price, cleared_quantity, df_supply_cleared = clear_market(df_supply=df_supply, df_demand=df_demand)
+    clearing_price, cleared_quantity, df_supply_cleared = clear_market(df_supply=df_supply,
+                                                                       df_demand=df_demand,
+                                                                       )
 
-
-    
+  
 
     #################### Make plot
     fig = plot_market_curves(df_supply=df_supply,
@@ -215,17 +230,15 @@ def update_market(values):
 
 
 
-
-
-    #################### Preparar datos para DataTable de monitorización
+    #################### Prepare data for monitoring DataTable
     data, columns = dispatch_table(df_supply_cleared=df_supply_cleared.round(2),
                                    technologies_dic=technologies_dic,
-                                   config_dic=config_dic)
+                                   config_dic=config_dic,
+                                   hydro_reserves=hydro_reserves)
 
-    
+
+
     return fig, data, columns
-
-
 
 
 
