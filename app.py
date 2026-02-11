@@ -5,7 +5,7 @@ from dash import Dash, html, dcc, dash_table, Input, Output, ALL, ctx
 
 from src.config.parameters import load_scenario
 from src.layout.dispatch_table_format import dispatch_table_format
-from src.layout.market_block import market_block
+from src.layout.public_info_block import public_info_block
 from src.layout.technology_block import technology_block
 from src.market.build_df_demand import build_df_demand
 from src.market.build_df_supply import build_df_supply
@@ -25,7 +25,11 @@ scenario = load_scenario("base_case")
 ### Unwrap relevant scenario variables
 technologies_dic = scenario["technologies"]
 demand_dic = scenario["demand"]
+public_info_dic = scenario["public_info"]
 config_dic = scenario["config"]
+
+co2_price = public_info_dic["co2_price"]
+
 
 ### Compute expected demand
 expected_demand = sum(d["quantity"] for d in demand_dic.values())
@@ -50,24 +54,30 @@ app.layout = html.Div(
         # Title
         # =====================
         html.Div(
-            html.H1(f'{scenario["name"]}'),
-            style={"textAlign": "left",
-                   "marginBottom": "30px"}
+            html.H1(
+                scenario["name"],
+                style={
+                    "fontSize": "42px",
+                    "color": "#1F3A5F",
+                    "fontWeight": "700",
+                    "marginLeft": "30px"   # Indent
+                }
+            ),
+            style={
+                "marginBottom": "30px"
+            }
         ),
-
-
-
-
 
         # =====================
         # Technology blocks
         # =====================
         html.Div(
             [
-                # Market block
-                market_block(
+                # MarPublic info block
+                public_info_block(
                     expected_demand=expected_demand,
-                    hydro_reserves=30
+                    hydro_reserves=public_info_dic["hydro_reserves"],
+                    co2_price=public_info_dic["co2_price"]
                 ),
 
                 # Technology blocks
@@ -177,17 +187,13 @@ app.layout = html.Div(
 )
 
 
-def update_market(slider_values, hydro_reserve_value):   # slider_values is not used, but this parameter is required in Dash for coherence
-
-
-
-    print("TRIGGER:", ctx.triggered_id)
+def update_market(slider_values, hydro_reserve_value):   # these variables are not used, but are required in Dash for coherence
 
     slider_inputs = ctx.inputs_list[0]
 
     hydro_reserves = ctx.inputs_list[1]["value"]
 
-    
+   
     #################### Put all the slider values into df_supply:
     #
     # id || technology | price | quantity
@@ -234,7 +240,8 @@ def update_market(slider_values, hydro_reserve_value):   # slider_values is not 
     data, columns = dispatch_table(df_supply_cleared=df_supply_cleared.round(2),
                                    technologies_dic=technologies_dic,
                                    config_dic=config_dic,
-                                   hydro_reserves=hydro_reserves)
+                                   hydro_reserves=hydro_reserves,
+                                   co2_price=co2_price)
 
 
 
@@ -248,7 +255,7 @@ def update_market(slider_values, hydro_reserve_value):   # slider_values is not 
 # App run
 # =====================
 if __name__ == "__main__":
-    app.run(debug=True, port=8050)   ##### port by default, 8050
+    app.run(debug=True, port=8051)   ##### port by default, 8050
 
 
 

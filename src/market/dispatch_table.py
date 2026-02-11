@@ -10,7 +10,8 @@ def dispatch_table(*,
                    df_supply_cleared: pd.DataFrame,
                    technologies_dic: dict,
                    config_dic: dict,
-                   hydro_reserves: float
+                   hydro_reserves: float,
+                   co2_price: float
 ):
     """
     Converts `df_supply_cleared` into a transposed format for Dash DataTables,
@@ -78,9 +79,16 @@ def dispatch_table(*,
     df['Unitary variable costs'] = df.index.map(lambda x: technologies_dic[x]['unitary_cost'])
 
 
+    ##### Add CO2 emissions
+    df['CO2 emissions'] = (df.index.map(lambda x: technologies_dic[x]['unitary_CO2']) * df["Generated energy"]).round(2)
+
+
+    ##### Add CO2 price
+    df['CO2 price'] = co2_price
+
 
     ##### Add variable costs
-    df['Variable costs'] = df['Generated energy']*df['Unitary variable costs'] * (-1)
+    df['Variable costs'] = df['Generated energy']*df['Unitary variable costs'] * (-1) + df['CO2 emissions']*co2_price * (-1)
 
 
     ##### Add energy imbalance

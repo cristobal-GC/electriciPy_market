@@ -6,7 +6,7 @@ def dispatch_table_format():
 
     #################### Cell colors according to blocks
     market_rows = ["Offered energy", "Offered price", "Sold energy", "Market price", "Market incomes"]
-    dispatch_rows = ["Generated energy", "Unitary variable costs", "Variable costs"]
+    dispatch_rows = ["Generated energy", "Unitary variable costs", "CO2 emissions", "CO2 price", "Variable costs"]
     penalty_rows = ["Energy imbalance", "Penalty factor", "Penalty price", "Penalty"]
     income_rows = ["TOTAL INCOMES"]
 
@@ -49,7 +49,7 @@ def dispatch_table_format():
 
     #################### Add thick lines at the beginning of the block
     block_separators = {
-        "Offered energy": "2px solid #000000",
+        "Offered energy": "4px solid #000000",
         "Generated energy": "2px solid #000000",
         "Energy imbalance": "2px solid #000000",
         "TOTAL INCOMES": "4px solid #000000"

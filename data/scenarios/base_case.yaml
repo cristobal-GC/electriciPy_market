@@ -4,6 +4,17 @@ name: 'Base case'
 
 technologies:
 
+  solar_wind:
+    name: "Solar-Wind"
+    capacity_min: 0         # GW
+    capacity_max: 20        # GW
+    quantity_initial: 10    # GWh
+    price_initial: 10       # €/GWh
+    unitary_cost: 0         # €/GWh
+    unitary_CO2: 0          # t/GWh
+    potential: 15           # GWh
+    icon: solar_wind.png
+
   nuclear:
     name: Nuclear
     capacity_min: 0
@@ -11,26 +22,8 @@ technologies:
     quantity_initial: 10
     price_initial: 5
     unitary_cost: 10
+    unitary_CO2: 0
     icon: nuclear.png
-
-  hydro:
-    name: Hydro
-    capacity_min: 0
-    capacity_max: 15
-    quantity_initial: 10
-    price_initial: 65
-    unitary_cost: 0
-    icon: hydro.png
-
-  solar_wind:
-    name: "Solar-Wind"
-    capacity_min: 0
-    capacity_max: 20
-    quantity_initial: 10
-    price_initial: 10
-    unitary_cost: 0
-    potential: 15
-    icon: solar_wind.png
 
   coal:
     name: Coal
@@ -39,6 +32,7 @@ technologies:
     quantity_initial: 10
     price_initial: 35
     unitary_cost: 40
+    unitary_CO2: 0.8
     icon: coal.png
 
   gas:
@@ -48,8 +42,18 @@ technologies:
     quantity_initial: 20
     price_initial: 60
     unitary_cost: 60
+    unitary_CO2: 0.4
     icon: gas.png
 
+  hydro:
+    name: Hydro
+    capacity_min: 0
+    capacity_max: 15
+    quantity_initial: 10
+    price_initial: 65
+    unitary_cost: 0
+    unitary_CO2: 0
+    icon: hydro.png
 
 
 demand:
@@ -63,6 +67,10 @@ demand:
     price: 0
     quantity: 25
 
+
+public_info:
+  hydro_reserves: 11
+  co2_price: 19
 
 
 config:
