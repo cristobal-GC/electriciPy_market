@@ -78,3 +78,5 @@ config:
   price_max: 180
   price_step: 1
   unitary_penalty_fraction: 0.1   # Penalty price is market price increased by this fraction per deviation unit
+  demand_uncertainty: 0.02
+  results_folder: "results"

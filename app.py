@@ -1,7 +1,9 @@
 
 import pandas as pd
+import os
+from datetime import datetime
 
-from dash import Dash, html, dcc, dash_table, Input, Output, ALL, ctx
+from dash import Dash, html, dcc, dash_table, Input, Output, State, ALL, ctx
 
 from src.config.parameters import load_scenario
 from src.layout.dispatch_table_format import dispatch_table_format
@@ -11,6 +13,7 @@ from src.market.build_df_demand import build_df_demand
 from src.market.build_df_supply import build_df_supply
 from src.market.clear_market import clear_market
 from src.market.dispatch_table import dispatch_table
+from src.market.estimate_demand import estimate_demand
 from src.plotting.plot_market_curves import plot_market_curves
 
 
@@ -29,10 +32,11 @@ public_info_dic = scenario["public_info"]
 config_dic = scenario["config"]
 
 co2_price = public_info_dic["co2_price"]
+demand_uncertainty = config_dic["demand_uncertainty"]
 
 
-### Compute expected demand
-expected_demand = sum(d["quantity"] for d in demand_dic.values())
+### Estimate expected demand
+expected_demand = estimate_demand(demand_dic, demand_uncertainty)
 
 
 
@@ -155,6 +159,30 @@ app.layout = html.Div(
                 "marginBottom": "30px"
             }
         ),
+
+
+        # =====================
+        # Button save results
+        # =====================
+        html.Div(
+            html.Button(
+                "Save results",
+                id="save_results_button",
+                n_clicks=0,
+                style={
+                    "fontSize": "18px",
+                    "padding": "10px 20px",
+                    "backgroundColor": "#1F3A5F",
+                    "color": "white",
+                    "border": "none",
+                    "cursor": "pointer"
+                }
+            ),
+            style={
+                "textAlign": "center",
+                "marginBottom": "40px"
+            }
+        ),
     ],
     style={"fontFamily": "sans-serif"}
 )
@@ -249,13 +277,49 @@ def update_market(slider_values, hydro_reserve_value):   # these variables are n
 
 
 
+# ===================== This callback is to store incomes from the round results
+@app.callback(
+    Output("save_results_button", "n_clicks"),
+    Input("save_results_button", "n_clicks"),
+    State("df_outputs", "data"),
+    prevent_initial_call=True
+)
+
+
+def save_round(n_clicks, table_data):
+
+    if not table_data:
+        return 0
+
+    df = pd.DataFrame(table_data)
+
+    if "TOTAL_INCOMES" not in df.columns:
+        return 0
+
+    df_income = df[["technology", "TOTAL_INCOME"]]
+
+    # File name with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{timestamp}.csv"
+
+    results_folder = config_dic["results_folder"]
+    os.makedirs(results_folder, exist_ok=True)
+
+    filepath = os.path.join(results_folder, filename)
+
+    df_income.to_csv(filepath, index=False)
+
+    return 0
+
+
+
 
 
 # =====================
 # App run
 # =====================
 if __name__ == "__main__":
-    app.run(debug=True, port=8051)   ##### port by default, 8050
+    app.run(debug=True, port=8050)   ##### port by default, 8050
 
 
 
