@@ -14,3 +14,4 @@ dash = "*"
 plotly = "*"
 numpy = "*"
 pyyaml = "*"
+

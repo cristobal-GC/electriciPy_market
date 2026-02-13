@@ -1,6 +1,8 @@
 
 import pandas as pd
 import os
+import re
+
 from datetime import datetime
 
 from dash import Dash, html, dcc, dash_table, Input, Output, State, ALL, ctx
@@ -34,9 +36,10 @@ config_dic = scenario["config"]
 co2_price = public_info_dic["co2_price"]
 demand_uncertainty = config_dic["demand_uncertainty"]
 
-
 ### Estimate expected demand
 expected_demand = estimate_demand(demand_dic, demand_uncertainty)
+
+
 
 
 
@@ -71,6 +74,7 @@ app.layout = html.Div(
                 "marginBottom": "30px"
             }
         ),
+
 
         # =====================
         # Technology blocks
@@ -129,7 +133,7 @@ app.layout = html.Div(
                 # --- Table ---
                 html.Div(
                     dash_table.DataTable(
-                        id="df_outputs",
+                        id="results_table",
                         page_size=20,
                         style_cell={
                             'fontSize': 20,
@@ -170,12 +174,15 @@ app.layout = html.Div(
                 id="save_results_button",
                 n_clicks=0,
                 style={
-                    "fontSize": "18px",
-                    "padding": "10px 20px",
+                    "fontSize": "22px",
+                    "padding": "22px 40px",
                     "backgroundColor": "#1F3A5F",
                     "color": "white",
                     "border": "none",
-                    "cursor": "pointer"
+                    "borderRadius": "30px",
+                    "cursor": "pointer",
+                    "boxShadow": "0px 0px 20px rgba(0,0,0,0.4)",
+                    "transition": "all 0.2s ease"
                 }
             ),
             style={
@@ -183,6 +190,9 @@ app.layout = html.Div(
                 "marginBottom": "40px"
             }
         ),
+
+        html.Div(id="save_status")
+
     ],
     style={"fontFamily": "sans-serif"}
 )
@@ -208,8 +218,8 @@ app.layout = html.Div(
 
 @app.callback(
     Output("market_curve", "figure"),
-    Output("df_outputs", "data"),
-    Output("df_outputs", "columns"),
+    Output("results_table", "data"),
+    Output("results_table", "columns"),
     Input({"type": "tech-slider", "tech": ALL, "field": ALL}, "value"),  
     Input({"type": "hydro-reserve"}, "value"),  
 )
@@ -279,9 +289,9 @@ def update_market(slider_values, hydro_reserve_value):   # these variables are n
 
 # ===================== This callback is to store incomes from the round results
 @app.callback(
-    Output("save_results_button", "n_clicks"),
+    Output("save_status", "children"),
     Input("save_results_button", "n_clicks"),
-    State("df_outputs", "data"),
+    State("results_table", "data"),
     prevent_initial_call=True
 )
 
@@ -289,28 +299,31 @@ def update_market(slider_values, hydro_reserve_value):   # these variables are n
 def save_round(n_clicks, table_data):
 
     if not table_data:
+        print('------------------> ERROR 1')
         return 0
 
-    df = pd.DataFrame(table_data)
+    df = pd.DataFrame(table_data).set_index('Variable')
 
-    if "TOTAL_INCOMES" not in df.columns:
-        return 0
+    print(f' ------> df is {df}')
 
-    df_income = df[["technology", "TOTAL_INCOME"]]
+    df_incomes = df.loc[["TOTAL INCOMES"]]
+    print(f'------> df_incomes is {df_incomes}')
+
 
     # File name with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{timestamp}.csv"
+
+    safe_name = re.sub(r'[^\w\-]', '_', scenario['name'])   # Replace special characters with "_"
+    filename = f"{timestamp}_{safe_name}.csv"
 
     results_folder = config_dic["results_folder"]
     os.makedirs(results_folder, exist_ok=True)
 
     filepath = os.path.join(results_folder, filename)
 
-    df_income.to_csv(filepath, index=False)
+    df_incomes.to_csv(filepath, index=False)
 
-    return 0
-
+    return f"Saved: {filename}"
 
 
 
