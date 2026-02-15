@@ -88,11 +88,11 @@ def dispatch_table(*,
 
 
     ##### Add variable costs
-    df['Variable costs'] = df['Generated energy']*df['Unitary variable costs'] * (-1) + df['CO2 emissions']*co2_price * (-1)
+    df['Variable costs'] = (df['Generated energy']*df['Unitary variable costs'] * (-1) + df['CO2 emissions']*co2_price * (-1)).round(2)
 
 
     ##### Add energy imbalance
-    df['Energy imbalance'] = df['Generated energy'] - df['Sold energy']
+    df['Energy imbalance'] = (df['Generated energy'] - df['Sold energy']).round(2)
 
 
     ##### Add penalty factor    

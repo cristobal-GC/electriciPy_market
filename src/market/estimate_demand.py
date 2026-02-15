@@ -11,8 +11,8 @@ def estimate_demand(demand_dic, demand_uncertainty):
     # Sort in decreasing price values
     df_demand = df_demand.sort_values("price", ascending=False)
 
-    # Remove offers at zero price
-    df_demand = df_demand[df_demand["price"] != 0]
+    # Remove offers at zero price or below
+    df_demand = df_demand[df_demand["price"] > 0]
 
     # Estimate min, max and mean value
     min_demand = df_demand.iloc[0]["quantity"]

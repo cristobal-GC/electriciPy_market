@@ -1,0 +1,85 @@
+name: 'Round 4: 19:00-20:00 , ETS market: 80 €/tCO2 , Geopolitical conflict'
+
+
+
+technologies:
+
+  solar_wind:
+    name: "Solar-Wind"
+    capacity_min: 0         # GW
+    capacity_max: 20        # GW
+    quantity_initial: 0     # GWh
+    price_initial: 0        # €/GWh
+    unitary_cost: 0         # €/GWh
+    unitary_CO2: 0          # t/GWh
+    potential: 14           # GWh
+    icon: solar_wind.png
+
+  nuclear:
+    name: Nuclear
+    capacity_min: 0
+    capacity_max: 10
+    quantity_initial: 10
+    price_initial: 0
+    unitary_cost: 5
+    unitary_CO2: 0
+    icon: nuclear.png
+
+  coal:
+    name: Coal
+    capacity_min: 0
+    capacity_max: 10
+    quantity_initial: 10
+    price_initial: 180
+    unitary_cost: 30
+    unitary_CO2: 0.8
+    icon: coal.png
+
+  gas:
+    name: Gas
+    capacity_min: 0
+    capacity_max: 20
+    quantity_initial: 20
+    price_initial: 180
+    unitary_cost: 130
+    unitary_CO2: 0.4
+    icon: gas.png
+
+  hydro:
+    name: Hydro
+    capacity_min: 0
+    capacity_max: 15
+    quantity_initial: 0
+    price_initial: 0
+    unitary_cost: 3
+    unitary_CO2: 0
+    icon: hydro.png
+
+
+demand:
+  off1:
+    price: 180
+    quantity: 33.2
+  off2:
+    price: 110
+    quantity: 1.9
+  off3:
+    price: 30
+    quantity: 3.6
+  off4:
+    price: 0
+    quantity: 3
+
+
+public_info:
+  hydro_reserves: 30
+  co2_price: 80
+
+
+config:
+  quantity_step: 1
+  price_max: 180
+  price_step: 1
+  unitary_penalty_fraction: 0.1   # Penalty price is market price increased by this fraction per deviation unit
+  demand_uncertainty: 0.02
+  results_folder: "results"

@@ -25,7 +25,7 @@ from src.plotting.plot_market_curves import plot_market_curves
 # =====================
 # Load scenario
 # =====================
-scenario = load_scenario("base_case")
+scenario = load_scenario("Round_4_LastRound_vGeoConflict_and_ETS")
 
 ### Unwrap relevant scenario variables
 technologies_dic = scenario["technologies"]
@@ -110,7 +110,7 @@ app.layout = html.Div(
                 "justifyContent": "center",
                 "alignItems": "flex-start",
                 "gap": "30px",
-                "marginBottom": "30px"
+                "marginBottom": "150px"
             }
         ),
 
@@ -299,16 +299,11 @@ def update_market(slider_values, hydro_reserve_value):   # these variables are n
 def save_round(n_clicks, table_data):
 
     if not table_data:
-        print('------------------> ERROR 1')
         return 0
 
     df = pd.DataFrame(table_data).set_index('Variable')
 
-    print(f' ------> df is {df}')
-
     df_incomes = df.loc[["TOTAL INCOMES"]]
-    print(f'------> df_incomes is {df_incomes}')
-
 
     # File name with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
