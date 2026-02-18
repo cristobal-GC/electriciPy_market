@@ -7,7 +7,7 @@ def dispatch_table_format():
     #################### Cell colors according to blocks
     market_rows = ["Offered energy", "Offered price", "Sold energy", "Market price", "Market incomes"]
     dispatch_rows = ["Generated energy", "Unitary variable costs", "CO2 emissions", "CO2 price", "Variable costs"]
-    penalty_rows = ["Energy imbalance", "Penalty factor", "Penalty price", "Penalty"]
+    penalty_rows = ["Energy imbalance", "Penalty factor", "Penalty price", "Penalties"]
     income_rows = ["TOTAL INCOMES"]
 
 
@@ -28,7 +28,7 @@ def dispatch_table_format():
     highlight_rows = {
         "Market incomes": "#2890DA",    # azul 
         "Variable costs": "#DA9028",    # naranja 
-        "Penalty": "#C61D0A",           # rojo 
+        "Penalties": "#C61D0A",         # rojo 
         "TOTAL INCOMES": "#27611C"      # verde
     }
 

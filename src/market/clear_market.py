@@ -7,7 +7,52 @@ def clear_market(*,
                  df_demand: pd.DataFrame,
                  ):
     """
-    Robust uniform-price market clearing.
+    Robust uniform-price market clearing with stepwise supply and demand curves.
+
+    - Handles multiple supply offers at the same price.
+    - Prorates marginal offers if needed.
+    - Supports zero-price offers.
+    - Quantities can be fractional (float), no int64 issues.
+
+    Inputs
+    ----------
+
+    df_supply : pd.DataFrame
+        
+         id || technology | price | quantity
+         ---++------------+-------+----------
+          0 || solar      | 30    | 100
+          1 || wind       | 25    |  80
+          2 || gas        | 90    | 200    
+    
+    
+    df_demand : pd.DataFrame
+
+         id || price | quantity
+         ---++-------+----------
+          0 || 30    | 100
+          1 || 25    |  10
+          2 ||  0    |   5
+
+    Outputs
+    -------
+
+    clearing_price : float
+        Price of the marginal accepted supply offer.
+    
+        
+    cleared_quantity : float
+        Total matched quantity.
+    
+        
+    df_supply_cleared : pd.DataFrame
+        
+         technology || price | quantity | remaining | cleared_quantity | clearing_price | market_incomes
+         -----------++-------+------------+---------+------------------+----------------+----------------
+          solar     || 30    | 100      |    ...
+          wind      || 25    |  80      |    ...
+          gas       || 90    | 200      |    ...    
+    
     """
 
     EPS = 1e-9

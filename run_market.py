@@ -210,11 +210,14 @@ app.layout = html.Div(
 # The outputs of that function are connected to the outputs declared in the callback.
 # The function is executed every time the inputs change.
 # It makes sense to have multiple callbacks if the inputs are different, but that's not necessarily the case here.
+
+
+
+# ===================== This callback is to update the market (figure and table)
 #
 ##### Inputs:
 # The slider values ​​have structured IDs,
 # This allows them to be easily retrieved without needing to be strict about the order
-
 
 @app.callback(
     Output("market_curve", "figure"),
@@ -239,10 +242,8 @@ def update_market(slider_values, hydro_reserve_value):   # these variables are n
     #  0 || solar      | 30    | 100
     #  1 || wind       | 25    |  80
     #  2 || gas        | 90    | 200
-    #
-    
+    #    
     df_supply = build_df_supply(slider_inputs)
-
 
 
     #################### Put the demand info from scenario dic into df_demand:
@@ -256,22 +257,26 @@ def update_market(slider_values, hydro_reserve_value):   # these variables are n
     df_demand = build_df_demand(demand_dic)
 
 
-
     #################### Clear market
     #
-    # Add columns 'remaining', 'cleared_quantity' and 'cleared_price'
+    #    df_supply_cleared : pd.DataFrame
+        
+    #  technology || price | quantity | remaining | cleared_quantity | clearing_price | market_incomes
+    #  -----------++-------+------------+---------+------------------+----------------+----------------
+    #   solar     || 30    | 100      |    ...
+    #   wind      || 25    |  80      |    ...
+    #   gas       || 90    | 200      |    ...    
+    #
     clearing_price, cleared_quantity, df_supply_cleared = clear_market(df_supply=df_supply,
                                                                        df_demand=df_demand,
                                                                        )
 
   
-
     #################### Make plot
     fig = plot_market_curves(df_supply=df_supply,
                              df_demand=df_demand,
                              clearing_price=clearing_price,
                              cleared_quantity=cleared_quantity)
-
 
 
     #################### Prepare data for monitoring DataTable
@@ -280,7 +285,6 @@ def update_market(slider_values, hydro_reserve_value):   # these variables are n
                                    config_dic=config_dic,
                                    hydro_reserves=hydro_reserves,
                                    co2_price=co2_price)
-
 
 
     return fig, data, columns
@@ -319,6 +323,7 @@ def save_round(n_clicks, table_data):
     df_incomes.to_csv(filepath, index=False)
 
     return f"Saved: {filename}"
+
 
 
 

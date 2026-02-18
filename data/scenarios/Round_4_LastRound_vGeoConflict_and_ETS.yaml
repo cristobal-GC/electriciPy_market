@@ -51,7 +51,7 @@ technologies:
     capacity_max: 15
     quantity_initial: 0
     price_initial: 0
-    unitary_cost: 3
+    unitary_cost: 0
     unitary_CO2: 0
     icon: hydro.png
 

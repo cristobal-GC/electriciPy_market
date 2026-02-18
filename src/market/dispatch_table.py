@@ -105,11 +105,11 @@ def dispatch_table(*,
 
 
     ##### Add penalty
-    df['Penalty'] = (df['Penalty price'] * df['Energy imbalance'].abs() * (-1)).round(2)
+    df['Penalties'] = (df['Penalty price'] * df['Energy imbalance'].abs() * (-1)).round(2)
 
 
     ##### Add incomes
-    df['TOTAL INCOMES'] = (df['Market incomes'] + df['Variable costs'] + df['Penalty']).round(2)
+    df['TOTAL INCOMES'] = (df['Market incomes'] + df['Variable costs'] + df['Penalties']).round(2)
 
 
 
