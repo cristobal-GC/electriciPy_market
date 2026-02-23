@@ -3,8 +3,9 @@
 
 This repository contains a **simplified electricity market simulator** designed to help students understand how wholesale power markets work and how to design **optimal bidding strategies**.
 
-![electriciPy market panel 1](img/panel1.jpg)
-![electriciPy market panel 2](img/panel2.jpg)
+![electriciPy market panel 1](/img/panel1.jpg)
+![electriciPy market panel 2](/img/panel2.png)
+
 
 ---
 
@@ -108,7 +109,7 @@ To create a summary table from the stored rounds:
 python run_results.py
 ```
 
-![electriciPy market panel 3](img/panel3.jpg)
+![electriciPy market panel 3](/img/panel3.png)
 
 ---
 
