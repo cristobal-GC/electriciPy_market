@@ -59,13 +59,13 @@ technologies:
 demand:
   off1:
     price: 180
-    quantity: 21.8
+    quantity: 22
   off2:
     price: 60
-    quantity: 2.7
+    quantity: 2
   off3:
     price: 20
-    quantity: 1.8
+    quantity: 3
   off4:
     price: 0
     quantity: 3

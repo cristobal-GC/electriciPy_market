@@ -1,4 +1,4 @@
-name: 'Round 4: 19:00-20:00 , ETS market: 80 €/tCO2 , Geopolitical conflict'
+name: 'Round 4: 19:00-20:00 , ETS market + Geopolitical conflict'
 
 
 
@@ -59,13 +59,13 @@ technologies:
 demand:
   off1:
     price: 180
-    quantity: 33.2
+    quantity: 33
   off2:
     price: 110
-    quantity: 1.9
+    quantity: 2
   off3:
     price: 30
-    quantity: 3.6
+    quantity: 4
   off4:
     price: 0
     quantity: 3

@@ -95,7 +95,7 @@ app.layout = html.Div(
                 id="results-table",
                 columns=[],
                 data=[],
-                style_table={'maxWidth': '1200px', 'margin': 'auto', 'overflowX': 'auto'},
+                style_table={'maxWidth': '1600px', 'margin': 'auto', 'overflowX': 'auto'},
                 style_cell={
                     'fontFamily': 'sans-serif',
                     'fontSize': 24,

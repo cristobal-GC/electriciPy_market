@@ -25,7 +25,7 @@ from src.plotting.plot_market_curves import plot_market_curves
 # =====================
 # Load scenario
 # =====================
-scenario = load_scenario("Round_4_LastRound_vGeoConflict_and_ETS")
+scenario = load_scenario("scenario_template")
 
 ### Unwrap relevant scenario variables
 technologies_dic = scenario["technologies"]
