@@ -57,7 +57,7 @@ echo " " | ps2pdf - "$TMPDIR/blank.pdf"
 pdfunite "$TMPDIR/wind_page1.pdf" "$TMPDIR/blank.pdf" "$TMPDIR/wind_page2.pdf" "$TMPDIR/wind_final.pdf"
 
 # --- Combine everything ---
-OUTPUT="combined.pdf"
+OUTPUT="doc_to_print.pdf"
 pdfunite "$INTERMEDIATE" "$TMPDIR/wind_final.pdf" "$OUTPUT"
 
 # Clean up temporary files
