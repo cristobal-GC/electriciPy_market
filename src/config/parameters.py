@@ -2,7 +2,7 @@ import yaml
 from pathlib import Path
 
 
-def load_scenario(scenario_name="base_case"):
+def load_scenario(scenario_name):
 
     ### Set in a robust way the path for the scenarios folder
     # __file__          : provides the path of this file, parameters.py

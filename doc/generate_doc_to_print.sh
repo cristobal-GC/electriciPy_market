@@ -2,13 +2,25 @@
 
 set -e
 
+# Renewable technology for the forecasts: WIND or SOLAR
+TECHNOLOGY="SOLAR"
+
+case "$TECHNOLOGY" in
+    WIND)  tech="wind" ;;
+    SOLAR) tech="solar" ;;
+    *)
+        echo "Error: TECHNOLOGY must be WIND or SOLAR (got '$TECHNOLOGY')."
+        exit 1
+        ;;
+esac
+
 # Directories
 RULES_DIR="rules"
-WIND_DIR="wind_forecasts"
+FORECASTS_DIR="${tech}_forecasts"
 
 # Files
 GENERAL="$RULES_DIR/general_rules.pdf"
-WIND="$WIND_DIR/wind_forecasts.pdf"
+FORECASTS="$FORECASTS_DIR/${tech}_forecasts.pdf"
 
 # Check that the main files exist
 if [ ! -f "$GENERAL" ]; then
@@ -16,8 +28,8 @@ if [ ! -f "$GENERAL" ]; then
     exit 1
 fi
 
-if [ ! -f "$WIND" ]; then
-    echo "Error: $WIND not found."
+if [ ! -f "$FORECASTS" ]; then
+    echo "Error: $FORECASTS not found."
     exit 1
 fi
 
@@ -44,23 +56,23 @@ INTERMEDIATE="$TMPDIR/intermediate.pdf"
 # Combine general + particular PDFs
 pdfunite "${LIST_FILES[@]}" "$INTERMEDIATE"
 
-# --- Now process wind_forecasts.pdf ---
+# --- Now process the forecasts PDF ---
 # Extract page 1 and page 2
-pdftk "$WIND" cat 1 output "$TMPDIR/wind_page1.pdf"
-pdftk "$WIND" cat 2 output "$TMPDIR/wind_page2.pdf"
+pdftk "$FORECASTS" cat 1 output "$TMPDIR/forecasts_page1.pdf"
+pdftk "$FORECASTS" cat 2 output "$TMPDIR/forecasts_page2.pdf"
 
 # Create a blank page
 # Using ps2pdf (if not installed: sudo apt install ghostscript)
 echo " " | ps2pdf - "$TMPDIR/blank.pdf"
 
-# Combine wind_forecasts: page1 + blank + page2
-pdfunite "$TMPDIR/wind_page1.pdf" "$TMPDIR/blank.pdf" "$TMPDIR/wind_page2.pdf" "$TMPDIR/wind_final.pdf"
+# Combine forecasts: page1 + blank + page2
+pdfunite "$TMPDIR/forecasts_page1.pdf" "$TMPDIR/blank.pdf" "$TMPDIR/forecasts_page2.pdf" "$TMPDIR/forecasts_final.pdf"
 
 # --- Combine everything ---
 OUTPUT="doc_to_print.pdf"
-pdfunite "$INTERMEDIATE" "$TMPDIR/wind_final.pdf" "$OUTPUT"
+pdfunite "$INTERMEDIATE" "$TMPDIR/forecasts_final.pdf" "$OUTPUT"
 
 # Clean up temporary files
 rm -r "$TMPDIR"
 
-echo "Combined PDF created: $OUTPUT"
+echo "Combined PDF created: $OUTPUT ($TECHNOLOGY forecasts)"

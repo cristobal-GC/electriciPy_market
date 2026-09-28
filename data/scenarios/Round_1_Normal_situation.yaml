@@ -18,8 +18,8 @@ technologies:
   nuclear:
     name: Nuclear
     capacity_min: 0
-    capacity_max: 10
-    quantity_initial: 10
+    capacity_max: 8
+    quantity_initial: 8
     price_initial: 0
     unitary_cost: 5
     unitary_CO2: 0
